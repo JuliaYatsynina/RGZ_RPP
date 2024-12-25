@@ -1,0 +1,5 @@
+Flask
+Flask-Caching
+Flask-Limiter
+Flask-SQLAlchemy
+bandit
