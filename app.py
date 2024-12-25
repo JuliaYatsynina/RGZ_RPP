@@ -11,7 +11,6 @@ app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///urls.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['CACHE_TYPE'] = 'simple'
-app.config['CACHE_DEFAULT_TIMEOUT'] = 3600
 app.config['DEBUG'] = os.environ.get('FLASK_DEBUG', 'false').lower() in ['true', '1', 't', 'y', 'yes']
 
 db.init_app(app)
@@ -25,7 +24,7 @@ def generate_short_id(length=6):
 
 
 @app.route('/shorten', methods=['POST'])
-@limiter.limit("10 per day")
+@limiter.limit("10 per day", key_func=get_remote_address)
 def shorten_url():
     data = request.json
     original_url = data.get('original_url')
@@ -43,7 +42,6 @@ def shorten_url():
 
 
 @app.route('/<short_id>', methods=['GET'])
-@cache.cached(timeout=3600)
 @limiter.limit("100 per day", key_func=get_remote_address)
 def redirect_to_url(short_id):
     url = URL.query.filter_by(short_id=short_id).first()
