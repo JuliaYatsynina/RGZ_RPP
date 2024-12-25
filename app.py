@@ -16,7 +16,7 @@ app.config['DEBUG'] = os.environ.get('FLASK_DEBUG', 'false').lower() in ['true',
 
 db.init_app(app)
 cache = Cache(app)
-limiter = Limiter(app, key_func=get_remote_address)
+limiter = Limiter(app)
 
 
 def generate_short_id(length=6):
@@ -44,7 +44,7 @@ def shorten_url():
 
 @app.route('/<short_id>', methods=['GET'])
 @cache.cached(timeout=3600)
-@limiter.limit("100 per day")
+@limiter.limit("100 per day", key_func=get_remote_address)
 def redirect_to_url(short_id):
     url = URL.query.filter_by(short_id=short_id).first()
     if url:
