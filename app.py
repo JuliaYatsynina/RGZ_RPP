@@ -16,11 +16,7 @@ app.config['DEBUG'] = os.environ.get('FLASK_DEBUG', 'false').lower() in ['true',
 
 db.init_app(app)
 cache = Cache(app)
-limiter = Limiter(
-    app,
-    key_func=get_remote_address,
-    default_limits=["200 per day", "50 per hour"]
-)
+limiter = Limiter(app, key_func=get_remote_address)
 
 
 def generate_short_id(length=6):
