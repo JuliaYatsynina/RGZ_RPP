@@ -1,16 +1,18 @@
+import os
+import string
+import secrets
 from flask import Flask, request, redirect, jsonify
 from flask_caching import Cache
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from models import db, URL, Click
-import string
-import random
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///urls.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['CACHE_TYPE'] = 'simple'
 app.config['CACHE_DEFAULT_TIMEOUT'] = 3600
+app.config['DEBUG'] = os.environ.get('FLASK_DEBUG', 'false').lower() in ['true', '1', 't', 'y', 'yes']
 
 db.init_app(app)
 cache = Cache(app)
@@ -23,7 +25,7 @@ limiter = Limiter(
 
 def generate_short_id(length=6):
     characters = string.ascii_letters + string.digits
-    return ''.join(random.choice(characters) for _ in range(length))
+    return ''.join(secrets.choice(characters) for _ in range(length))
 
 
 @app.route('/shorten', methods=['POST'])
@@ -71,4 +73,4 @@ def get_stats(short_id):
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
-    app.run(debug=True)
+    app.run(debug=app.config['DEBUG'])
